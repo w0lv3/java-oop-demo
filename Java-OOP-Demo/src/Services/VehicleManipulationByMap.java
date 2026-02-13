@@ -1,6 +1,7 @@
 package Services;
 
 import Adapter.LocalDateAdapter;
+import Common.Enums;
 import Dtos.Car;
 import Dtos.Truck;
 import Dtos.Vehicles;
@@ -9,13 +10,11 @@ import Interfaces.IVehicleManipulationByMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.sun.source.tree.Tree;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VehicleManipulationByMap implements IVehicleManipulationByMap {
@@ -116,8 +115,19 @@ public class VehicleManipulationByMap implements IVehicleManipulationByMap {
     //endregion
 
     public void ShowAllVehicles() {
-        vehicleMap.forEach((k,vehicle)-> {
-            System.out.println(vehicle);
+        TreeMap<Integer, List<Vehicles>> vehiclesByCategory = vehicleMap.values().stream().collect(Collectors
+                .groupingBy(v -> v.getCategory(), ()->new TreeMap<>(), Collectors.toList()));
+
+        System.out.println("\nCars: ");
+        vehiclesByCategory.forEach((k,vehicles) -> {
+            if(k == Enums.VehicleCategories.CAR.getCode())
+                vehicles.forEach(v-> System.out.println(v));
+        });
+
+        System.out.println("\nTrucks: ");
+        vehiclesByCategory.forEach((k,vehicles) -> {
+            if(k == Enums.VehicleCategories.TRUCK.getCode())
+                vehicles.forEach(v-> System.out.println(v));
         });
     }
 
