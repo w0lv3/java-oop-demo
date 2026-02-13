@@ -3,6 +3,7 @@ package Dtos;
 import Interfaces.IRental;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public abstract class Vehicles implements IRental {
     private  final String plateNumber;
@@ -50,4 +51,28 @@ public abstract class Vehicles implements IRental {
     public String toString() {
         return getMake() + " " + getModel() + " " + getRegisteredDate() + " Rental price: $" + getRentalPrice();
     }
+
+    //Purpose is to have the equals of vehicle to focus on the
+    // plate number that is unique instead of the whole vehicle object.
+    @Override
+    public boolean equals(Object o)
+    {
+        if(this == o)
+            return true;
+
+        if (!(o instanceof Vehicles))
+            return false;
+
+        Vehicles inputVehicle = (Vehicles) o;
+        return this.plateNumber.equals(inputVehicle.plateNumber);
+    }
+
+    //Have the hasCode of the vehicle to take the hasCode of the plate number.
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.plateNumber);
+    }
+
+
 }
