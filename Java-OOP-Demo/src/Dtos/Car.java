@@ -1,5 +1,6 @@
 package Dtos;
 
+import Common.Enums;
 import Interfaces.IRental;
 
 import java.time.LocalDate;
@@ -11,19 +12,15 @@ public class Car extends Vehicles implements IRental {
     //Example in C# => public class Car : Vehicles, IInsurance
 
     public Car (String plateNumber, String make, String model, LocalDate registeredDate) {
-        super (plateNumber, make, model, registeredDate);
+        super (plateNumber, make, model, registeredDate, Enums.VehicleCategories.CAR.getCode());
         // super represent base in C#
         // Example public Car (String make, String model, LocalDate registeredDate) : base (make, model, registeredDate);
     }
 
-    @Override
-    // use java use an annotation instead of having the property signature as such using
-    // "public override string GetCategory()" like C#
-    public String getCategory() {
-        return "Car";
-    }
-
     //Insurance section
+    // use java use an annotation instead of having the property signature as such using
+    // "public override double getRentalPrice()" like C#
+    private boolean noPromo = false;
     @Override
     public double getRentalPrice() {
         double insuranceBaseCost = 500;
@@ -41,10 +38,14 @@ public class Car extends Vehicles implements IRental {
                 insuranceBaseCost -= (insuranceBaseCost * .3); //cheaper
                 break;
             default:
-                System.out.println("Promotional price not applied!");
+                noPromo = true;
                 break;
         }
 
         return insuranceBaseCost;
+    }
+
+    public boolean getNoPromo(){
+        return noPromo;
     }
 }

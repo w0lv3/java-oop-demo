@@ -1,5 +1,6 @@
 package Dtos;
 
+import Common.Enums;
 import Interfaces.IRental;
 
 import java.time.LocalDate;
@@ -7,14 +8,10 @@ import java.time.LocalDate;
 public class Truck extends Vehicles implements IRental {
 
     public Truck(String plateNumber, String make, String model, LocalDate registeredDate){
-        super (plateNumber, make, model, registeredDate);
+        super (plateNumber, make, model, registeredDate, Enums.VehicleCategories.TRUCK.getCode());
     }
 
-    @Override
-    public String getCategory() {
-        return "Truck";
-    }
-
+    private boolean noPromo = false;
     //Insurance section
     @Override
     public double getRentalPrice() {
@@ -36,10 +33,14 @@ public class Truck extends Vehicles implements IRental {
                 break;
 
             default:
-                System.out.println("Promotional price not applied!");
+                noPromo = true;
                 break;
         }
 
         return rentalBasePrice;
+    }
+
+    public boolean getNoPromo(){
+        return noPromo;
     }
 }

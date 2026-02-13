@@ -1,5 +1,6 @@
 package Dtos;
 
+import Common.Enums;
 import Interfaces.IRental;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ public abstract class Vehicles implements IRental {
     private final String make;
     private final String model;
     private final LocalDate registeredDate;
+    private final int category;
 
     //Getters
     public String getPlateNumber(){return plateNumber;}
@@ -26,7 +28,11 @@ public abstract class Vehicles implements IRental {
         return registeredDate;
     }
 
-    public Vehicles(String plateNumber, String make, String model, LocalDate registeredDate) {
+    public int getCategory(){
+        return category;
+    }
+
+    public Vehicles(String plateNumber, String make, String model, LocalDate registeredDate, int category) {
 
         //Validation check
         if(make.isBlank()) //isBlank() => .IsNullOrWhiteSpace in c#
@@ -42,14 +48,12 @@ public abstract class Vehicles implements IRental {
         this.make = make;
         this.model = model;
         this.registeredDate = registeredDate;
+        this.category = category;
     }
-
-    // Polymorphic behavior by using the getCategory from its extensions
-    public abstract String getCategory();
 
     @Override
     public String toString() {
-        return getMake() + " " + getModel() + " " + getRegisteredDate() + " Rental price: $" + getRentalPrice();
+        return getMake() + " " + getModel() + " " + getRegisteredDate() + " Rental price: $" + getRentalPrice() + (getNoPromo() ? " Promotional price not applied!" : "") ;
     }
 
     //Purpose is to have the equals of vehicle to focus on the
