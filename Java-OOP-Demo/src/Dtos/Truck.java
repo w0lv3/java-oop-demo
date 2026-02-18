@@ -11,25 +11,47 @@ public class Truck extends Vehicles implements IRental {
         super (plateNumber, make, model, registeredDate, Enums.VehicleCategories.TRUCK.getCode());
     }
 
-    private boolean noPromo = false;
-    //Insurance section
     @Override
-    public double getRentalPrice() {
-        double rentalBasePrice = 500;
+    public double getDailyRate() {
 
-        //Increment based of the machine year (older => more expensive)
+        double DailyPrice = 550;//Basic price
+        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
+                .getVehicleCategoriesByDescription(getMake().toLowerCase());
+        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
+
+        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
+            case Enums.VehicleBrands.TOYOTA:
+                DailyPrice = 300;
+            case Enums.VehicleBrands.FORD:
+                DailyPrice = 400;
+            case Enums.VehicleBrands.NISSAN:
+                DailyPrice = 225;
+        }
+
+        //decrease based of the machine year (older => less expensive)
         int carYear = LocalDate.now().getYear() - getRegisteredDate().getYear();
-        rentalBasePrice += carYear * 20; // += increment the by year value into base
+        DailyPrice -= DailyPrice / carYear; // -= decrease the by year value into daily rate.
 
-        switch (getMake().toLowerCase()) { //set to lowercase to avoid Case typo issues
-            case "toyota":
-                rentalBasePrice -= (rentalBasePrice * .5); //cheapest
+        return DailyPrice;
+    }
+
+    private boolean noPromo = false;
+    @Override
+    public double getPromoPrice() {
+        double promoPrice = getDailyRate();
+        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
+                .getVehicleCategoriesByDescription(getMake().toLowerCase());
+        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
+
+        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
+            case Enums.VehicleBrands.TOYOTA:
+                promoPrice -= (promoPrice * .5); //cheapest
                 break;
-            case "ford":
-                rentalBasePrice -= (rentalBasePrice * .3); // cheaper
+            case Enums.VehicleBrands.FORD:
+                promoPrice -= (promoPrice * .3); // cheaper
                 break;
-            case "nissan":
-                rentalBasePrice -= (rentalBasePrice * .2); // cheap
+            case Enums.VehicleBrands.NISSAN:
+                promoPrice -= (promoPrice * .2); // cheap
                 break;
 
             default:
@@ -37,7 +59,7 @@ public class Truck extends Vehicles implements IRental {
                 break;
         }
 
-        return rentalBasePrice;
+        return promoPrice;
     }
 
     public boolean getNoPromo(){

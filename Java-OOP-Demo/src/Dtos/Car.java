@@ -17,35 +17,56 @@ public class Car extends Vehicles implements IRental {
         // Example public Car (String make, String model, LocalDate registeredDate) : base (make, model, registeredDate);
     }
 
-    //Insurance section
+    //Daily rates section
     // use java use an annotation instead of having the property signature as such using
-    // "public override double getRentalPrice()" like C#
+    // "public override double getDailyRate()" like C#
+    @Override
+    public double getDailyRate() {
+
+        double DailyPrice = 450;//Basic price
+        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
+                .getVehicleCategoriesByDescription(getMake().toLowerCase());
+        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
+
+        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
+            case Enums.VehicleBrands.TOYOTA:
+                DailyPrice = 225;
+            case Enums.VehicleBrands.FORD:
+                DailyPrice = 300;
+            case Enums.VehicleBrands.NISSAN:
+                DailyPrice = 125;
+        }
+
+        //decrease based of the machine year (older => less expensive)
+        int carYear = LocalDate.now().getYear() - getRegisteredDate().getYear();
+        DailyPrice -= DailyPrice / carYear; // -= decrease the by year value into daily rate.
+
+        return DailyPrice;
+    }
+
     private boolean noPromo = false;
     @Override
-    public double getRentalPrice() {
-        double insuranceBaseCost = 500;
+    public double getPromoPrice() {
+        double promoPrice = getDailyRate();
+        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
+                .getVehicleCategoriesByDescription(getMake().toLowerCase());
 
-        //Increment based of the machine year (older => more expensive)
-        int carYear = LocalDate.now().getYear() - getRegisteredDate().getYear();
-        insuranceBaseCost += carYear * 10; // += increment the by year value into premium base
-
-        String Check = getMake().toLowerCase();
-        switch (getMake().toLowerCase()) { //set to lowercase to avoid Case typo issues
-            case "toyota":
-                insuranceBaseCost -= (insuranceBaseCost * .5); //cheapest
+        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
+        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
+            case Enums.VehicleBrands.TOYOTA:
+                promoPrice -= (promoPrice * .5); //cheapest
                 break;
-            case "ford":
-                insuranceBaseCost -= (insuranceBaseCost * .3); //cheaper
+            case Enums.VehicleBrands.FORD:
+                promoPrice -= (promoPrice * .3); //cheaper
                 break;
             default:
                 noPromo = true;
                 break;
         }
 
-        return insuranceBaseCost;
+        return promoPrice;
     }
 
-    public boolean getNoPromo(){
-        return noPromo;
-    }
+    public boolean getNoPromo(){ return noPromo; }
+
 }

@@ -1,23 +1,15 @@
-import Adapter.LocalDateAdapter;
 import Common.Commons;
 import Common.Enums;
 import Dtos.Car;
 import Dtos.Truck;
 import Dtos.Vehicles;
 import Interfaces.IVehicleManipulationByMap;
-import Services.VehicleManipulationByMap;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import Services.VehicleManipulationService;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     //Global variable to store all vehicles
     private static final List<Vehicles> allVehicles = new ArrayList<>();
@@ -49,7 +41,7 @@ public class Main {
     public static void main(String[] args){
         //Make use of services to demonstrate manipulation by add/update/remove and lookup using map.
         //Load up service with vehicles
-        vehicleManipulationByMapService = new VehicleManipulationByMap(jsonCarList, jsonTruckList);
+        vehicleManipulationByMapService = new VehicleManipulationService(jsonCarList, jsonTruckList);
 
         //Display all vehicles
         Scanner consoleReaderForService = new Scanner(System.in);
@@ -83,6 +75,8 @@ public class Main {
                 plateNumber = consoleReaderForService.nextLine();
                 //lookup by plateNumber using vehicleManipulationByMapService.SearchByPlate
                 vehicleExists = vehicleManipulationByMapService.SearchByPlate(plateNumber);
+                if(!vehicleExists)
+                    System.out.print("We can proceed. ");
             }
 
             while (category == null) {

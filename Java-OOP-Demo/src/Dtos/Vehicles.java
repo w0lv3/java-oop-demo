@@ -1,13 +1,12 @@
 package Dtos;
 
-import Common.Enums;
 import Interfaces.IRental;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
 public abstract class Vehicles implements IRental {
-    private  final String plateNumber;
+    private final String plateNumber;
     private final String make;
     private final String model;
     private final LocalDate registeredDate;
@@ -51,9 +50,10 @@ public abstract class Vehicles implements IRental {
         this.category = category;
     }
 
+    //String.format("%.2f", getPromoPrice()) for 2 decimal points
     @Override
     public String toString() {
-        return getMake() + " " + getModel() + " " + getRegisteredDate() + " Rental price: $" + getRentalPrice() + (getNoPromo() ? " Promotional price not applied!" : "") ;
+        return getMake() + " | " + getModel() + " | " + getRegisteredDate() + " | Daily rental price: $" + String.format("%.2f", getPromoPrice()) + (getNoPromo() ? " Promotional price not applied!" : "") ;
     }
 
     //Purpose is to have the equals of vehicle to focus on the
@@ -78,5 +78,8 @@ public abstract class Vehicles implements IRental {
         return Objects.hash(this.plateNumber);
     }
 
-
+    //Return the total cost for rental.
+    public double getTotalRate(Integer days) {
+        return getPromoPrice() * days;
+    }
 }

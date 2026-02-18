@@ -6,31 +6,38 @@ import Dtos.Car;
 import Dtos.Truck;
 import Dtos.Vehicles;
 
+import Interfaces.IFileManipulationService;
 import Interfaces.IVehicleManipulationByMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.sun.source.tree.Tree;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class VehicleManipulationByMap implements IVehicleManipulationByMap {
+public class VehicleManipulationService implements IVehicleManipulationByMap {
 
-    Map<String, Vehicles> vehicleMap = new HashMap<>();
-    List<Vehicles> allVehicles = new ArrayList<>();
+    private final Map<String, Vehicles> vehicleMap = new HashMap<>();
+    private final List<Vehicles> allVehicles = new ArrayList<>();
+    //Load up FileService
+    //private IFileManipulationService FileManipulationService = new FileManipulationService();
 
-    public VehicleManipulationByMap(String jsonCarList, String jsonTruckList){
+
+    public VehicleManipulationService(String jsonCarList, String jsonVanList){
         //Stack vs heap
         String stackVariable = "vehicle";
         Car heapVariable = new Car("1010JA90","Toyota", "Rav4", LocalDate.of(1990,1,31));
         System.out.printf("\nThis a stack : %s",stackVariable );
         System.out.printf("\nThis a heap : %s\n",heapVariable);
 
-        AddListOfCars(jsonCarList);
-        AddListOfTrucks(jsonTruckList);
+        //Load up vehicleMap
+        AddVehiclesList(jsonCarList, Car.class);
+        AddVehiclesList(jsonVanList, Truck.class);
+
+        //Fill allVehicles
+        vehicleMap.forEach((plateNumber,vehicles) ->allVehicles.add(vehicles) );
 
         //Display all vehicles
         DisplayAllVehicles();
@@ -59,60 +66,18 @@ public class VehicleManipulationByMap implements IVehicleManipulationByMap {
         Map<String, List<Vehicles>> vehiclesByMake = allVehicles.stream().collect(Collectors.groupingBy(v -> v.getMake()));
         vehiclesByMake.forEach((make, vehicles)-> System.out.printf("\n%d from the %s brand.", vehicles.size(), make));
 
-        //Load up map
-        allVehicles.forEach(v-> {
-            vehicleMap.put(v.getPlateNumber(), v);
-        });
-    }
+        ////Populate File with hardcoded JSON
+        //FileManipulationService.ImportJSONToFile(jsonCarList, Car.class);
+        //FileManipulationService.ImportJSONToFile(jsonVanList, Truck.class);
+        ////Load up MapWith text file needs to add validity for null ref
+        //FileManipulationService.LoadMapByFile().forEach((plateNumber,vehicles) -> AddVehicleByPlate(plateNumber,vehicles));
 
-    //region Vehicle private Methods.
-    private void AddListOfCars(String jsonCarList){
-
-        //Simulate the imported cars from a JSON string.
-        Type jsonType = new TypeToken<List<Car>>(){}.getType();
-        List<Car> importedCars = parseJsonList(jsonCarList, jsonType);
-
-        for(Car car:importedCars)
-        {
-            AddCar(car.getPlateNumber(), car.getMake(), car.getModel(), car.getRegisteredDate());
-        }
-    }
-
-    private void AddListOfTrucks(String jsonVanList) {
-        //Simulate the imported Trucks from a JSON string.
-        Type jsonType = new TypeToken<List<Truck>>(){}.getType();
-        List<Truck> importedTrucks = parseJsonList(jsonVanList, jsonType);
-
-        for(Truck truck:importedTrucks)
-        {
-            AddTruck(truck.getPlateNumber(), truck.getMake(), truck.getModel(), truck.getRegisteredDate());
-        }
-    }
-
-    private <T> List<T> parseJsonList(String json, Type type) {
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())//make use of the custom adapter to handle LocalDate deserialization
-                .create();
-        return gson.fromJson(json, type);
     }
 
     private void DisplayAllVehicles() {
         System.out.println("\nAll vehicles that the rental company owns are: ");
         allVehicles.forEach(v-> System.out.println(v));
     }
-
-    private Car AddCar(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Car newCar = new Car(plateNumber,make,model,registeredDate);
-        allVehicles.add(newCar);
-        return newCar; //Return for adding into existingVehicles
-    }
-
-    private Truck AddTruck(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Truck newTruck = new Truck(plateNumber, make,model,registeredDate);
-        allVehicles.add(newTruck);
-        return newTruck; //Return for adding into existingVehicles
-    }
-    //endregion
 
     public void ShowAllVehicles() {
         TreeMap<Integer, List<Vehicles>> vehiclesByCategory = vehicleMap.values().stream().collect(Collectors
@@ -161,6 +126,43 @@ public class VehicleManipulationByMap implements IVehicleManipulationByMap {
     public void UpdateVehicleByPlate(String plateToUpdate, Vehicles vehicleToApply) {
         //Update existing vehicle in map with new value;
         vehicleMap.computeIfPresent(plateToUpdate, (k,v)-> vehicleToApply);
+    }
+
+    //region Vehicle private Methods.
+    private <T extends Vehicles> void AddVehiclesList(String jsonVehiclesList, Class<T> vehicleCLass)
+    {
+        //Simulate the imported cars from a JSON string.
+        Type jsonType = TypeToken.getParameterized(List.class, vehicleCLass).getType();
+        List<T> importedVehicles = parseJsonList(jsonVehiclesList, jsonType);
+
+        for(T vehicle:importedVehicles)
+        {
+            if(vehicleCLass == Car.class)
+                AddCar(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
+            else if(vehicleCLass == Truck.class)
+                AddVan(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
+        }
+    }
+
+    private <T> List<T> parseJsonList(String json, Type type) {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())//make use of the custom adapter to handle LocalDate deserialization
+                .create();
+        return gson.fromJson(json, type);
+    }
+
+    private Car AddCar(String plateNumber, String make, String model, LocalDate registeredDate) {
+        Car newCar = new Car(plateNumber,make,model,registeredDate);
+        vehicleMap.putIfAbsent(newCar.getPlateNumber(), newCar);
+
+        return newCar; //Return for adding into existingVehicles
+    }
+
+    private Truck AddVan(String plateNumber, String make, String model, LocalDate registeredDate) {
+        Truck newVan = new Truck(plateNumber, make,model,registeredDate);
+        vehicleMap.putIfAbsent(newVan.getPlateNumber(), newVan);
+
+        return newVan; //Return for adding into existingVehicles
     }
 
 }
