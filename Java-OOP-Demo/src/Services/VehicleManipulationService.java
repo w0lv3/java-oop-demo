@@ -22,8 +22,7 @@ public class VehicleManipulationService implements IVehicleManipulationByMap {
     private final Map<String, Vehicles> vehicleMap = new HashMap<>();
     private final List<Vehicles> allVehicles = new ArrayList<>();
     //Load up FileService
-    //private IFileManipulationService FileManipulationService = new FileManipulationService();
-
+    IFileManipulationService FileManipulationService = new FileManipulationService();
 
     public VehicleManipulationService(String jsonCarList, String jsonVanList){
         //Stack vs heap
@@ -32,11 +31,15 @@ public class VehicleManipulationService implements IVehicleManipulationByMap {
         System.out.printf("\nThis a stack : %s",stackVariable );
         System.out.printf("\nThis a heap : %s\n",heapVariable);
 
-        //Load up vehicleMap
-        AddVehiclesList(jsonCarList, Car.class);
-        AddVehiclesList(jsonVanList, Truck.class);
+        //Populate File with hardcoded JSON
+        FileManipulationService.ImportJSONToFile(jsonCarList, Car.class);
+        FileManipulationService.ImportJSONToFile(jsonVanList, Truck.class);
+        //Load up MapWith text file needs to add validity for null ref
+        FileManipulationService.LoadMapByFile().forEach(this::AddVehicleByPlate);
 
-        //Fill allVehicles
+        //Fill allVehicles to be used in the simple operation below
+        //to demonstrate streaming, group by, peek, foreach and so on.
+        //region simple examples
         vehicleMap.forEach((plateNumber,vehicles) ->allVehicles.add(vehicles) );
 
         //Display all vehicles
@@ -65,13 +68,7 @@ public class VehicleManipulationService implements IVehicleManipulationByMap {
         System.out.printf("\nWe have a total of %d vehicles.", allVehicles.size()); //.size() is like .Count() in C#
         Map<String, List<Vehicles>> vehiclesByMake = allVehicles.stream().collect(Collectors.groupingBy(v -> v.getMake()));
         vehiclesByMake.forEach((make, vehicles)-> System.out.printf("\n%d from the %s brand.", vehicles.size(), make));
-
-        ////Populate File with hardcoded JSON
-        //FileManipulationService.ImportJSONToFile(jsonCarList, Car.class);
-        //FileManipulationService.ImportJSONToFile(jsonVanList, Truck.class);
-        ////Load up MapWith text file needs to add validity for null ref
-        //FileManipulationService.LoadMapByFile().forEach((plateNumber,vehicles) -> AddVehicleByPlate(plateNumber,vehicles));
-
+        //endregion
     }
 
     private void DisplayAllVehicles() {
@@ -117,52 +114,20 @@ public class VehicleManipulationService implements IVehicleManipulationByMap {
 
     public void DeleteVehicleByPlate(String plateToDelete){
         vehicleMap.remove(plateToDelete); //plate is key in the Map
+        //Update file
+        FileManipulationService.UpdateFileWithMap(vehicleMap);
     }
 
     public void AddVehicleByPlate(String plateToUpdate, Vehicles vehicleToAdd) {
         vehicleMap.putIfAbsent(plateToUpdate, vehicleToAdd); //Add vehicle to map if not exist
+        //Update file
+        FileManipulationService.UpdateFileWithMap(vehicleMap);
     }
 
     public void UpdateVehicleByPlate(String plateToUpdate, Vehicles vehicleToApply) {
         //Update existing vehicle in map with new value;
         vehicleMap.computeIfPresent(plateToUpdate, (k,v)-> vehicleToApply);
+        //Update file
+        FileManipulationService.UpdateFileWithMap(vehicleMap);
     }
-
-    //region Vehicle private Methods.
-    private <T extends Vehicles> void AddVehiclesList(String jsonVehiclesList, Class<T> vehicleCLass)
-    {
-        //Simulate the imported cars from a JSON string.
-        Type jsonType = TypeToken.getParameterized(List.class, vehicleCLass).getType();
-        List<T> importedVehicles = parseJsonList(jsonVehiclesList, jsonType);
-
-        for(T vehicle:importedVehicles)
-        {
-            if(vehicleCLass == Car.class)
-                AddCar(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
-            else if(vehicleCLass == Truck.class)
-                AddVan(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
-        }
-    }
-
-    private <T> List<T> parseJsonList(String json, Type type) {
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())//make use of the custom adapter to handle LocalDate deserialization
-                .create();
-        return gson.fromJson(json, type);
-    }
-
-    private Car AddCar(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Car newCar = new Car(plateNumber,make,model,registeredDate);
-        vehicleMap.putIfAbsent(newCar.getPlateNumber(), newCar);
-
-        return newCar; //Return for adding into existingVehicles
-    }
-
-    private Truck AddVan(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Truck newVan = new Truck(plateNumber, make,model,registeredDate);
-        vehicleMap.putIfAbsent(newVan.getPlateNumber(), newVan);
-
-        return newVan; //Return for adding into existingVehicles
-    }
-
 }

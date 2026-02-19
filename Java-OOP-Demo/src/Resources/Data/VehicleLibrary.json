@@ -1,4 +1,6 @@
-[
-    {"plateNumber":"PL13MA98","make":"Toyota", "model":"Hilux", "registeredDate":"01-03-1998","category":"2"},
-    {"plateNumber":"RH32MY15","make":"Nissan", "model":"Triton", "registeredDate":"15-05-2015","category":"2"}
-]
+
+{"plateNumber":"QB90JA20","make":"Toyota","model":"Camry","registeredDate":"01-01-2020","category":1}
+
+{"plateNumber":"RH32MY15","make":"Nissan","model":"Triton","registeredDate":"15-05-2015","category":2}
+
+{"plateNumber":"VA32JA18","make":"Ford","model":"F-150","registeredDate":"05-03-2018","category":1}

@@ -35,7 +35,7 @@ public class Truck extends Vehicles implements IRental {
         return DailyPrice;
     }
 
-    private boolean noPromo = false;
+    private transient boolean noPromo = false;
     @Override
     public double getPromoPrice() {
         double promoPrice = getDailyRate();
