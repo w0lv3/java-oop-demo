@@ -1,23 +1,19 @@
 package Services;
 
-import Adapter.LocalDateAdapter;
 import Common.Enums;
+import Common.Exceptions;
 import Dtos.Car;
 import Dtos.Truck;
 import Dtos.Vehicles;
 
 import Interfaces.IFileManipulationService;
-import Interfaces.IVehicleManipulationByMap;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import Interfaces.IVehicleManipulationService;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class VehicleManipulationService implements IVehicleManipulationByMap {
+public class VehicleManipulationService implements IVehicleManipulationService {
 
     private final Map<String, Vehicles> vehicleMap = new HashMap<>();
     private final List<Vehicles> allVehicles = new ArrayList<>();
@@ -104,11 +100,10 @@ public class VehicleManipulationService implements IVehicleManipulationByMap {
 
     public Vehicles GetVehicleByPlate(String lookupPlate){
         Vehicles lookupVehicle = vehicleMap.get(lookupPlate); //Returns the found vehicle
-        if(lookupVehicle != null)
-            System.out.println("Vehicle Found: +" + lookupVehicle);
-        else
-            System.out.println("Vehicle not exist!");
+        if(lookupVehicle == null)
+            throw new Exceptions.VehicleNotFoundException(lookupPlate);//Custom exception
 
+        System.out.println("Vehicle Found: +" + lookupVehicle);
         return lookupVehicle;
     }
 

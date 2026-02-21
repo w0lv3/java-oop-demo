@@ -2,7 +2,7 @@ package Interfaces;
 
 import Dtos.Vehicles;
 
-public interface IVehicleManipulationByMap {
+public interface IVehicleManipulationService {
 
     void ShowAllVehicles();
 

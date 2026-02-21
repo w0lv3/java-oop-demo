@@ -3,17 +3,19 @@ import Common.Enums;
 import Dtos.Car;
 import Dtos.Truck;
 import Dtos.Vehicles;
-import Interfaces.IVehicleManipulationByMap;
+import Interfaces.IVehicleManipulationService;
 import Services.VehicleManipulationService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main {
     //Global variable to store all vehicles
     private static final List<Vehicles> allVehicles = new ArrayList<>();
-
+    private static Logger logger = LogManager.getLogger(Main.class);
     //After adding a uniqueIdentifier, have the Set for plate number.
     private static Set<Vehicles> existingVehicles = new HashSet<>();
 
@@ -36,9 +38,10 @@ public class Main {
             """;
 
 
-    private static IVehicleManipulationByMap vehicleManipulationByMapService;
+    private static IVehicleManipulationService vehicleManipulationByMapService;
 
     public static void main(String[] args){
+        logger.info("Application Starting");
         //Make use of services to demonstrate manipulation by add/update/remove and lookup using map.
         //Load up service with vehicles
         vehicleManipulationByMapService = new VehicleManipulationService(jsonCarList, jsonTruckList);
@@ -58,6 +61,7 @@ public class Main {
 
         //Close scanner
         consoleReaderForService.close();
+        logger.info("Application Closing");
     }
 
     //region method for vehicle manipulations
@@ -87,15 +91,17 @@ public class Main {
                     VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
                     vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Car(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
                     category = vehicleType;
+                    logger.info("Car added successfully!");
                 }
                 else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.TRUCK.getDescription()))
                 {
                     VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
                     vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Truck(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
                     category = vehicleType;
+                    logger.info("Truck added successfully!");
                 }
                 else //error and loop the prior question
-                    System.out.println("Invalid vehicle is being added!!");
+                    logger.error("Invalid vehicle is being added!!");
             }
 
             System.out.println("Updated vehicles list: ");
@@ -139,12 +145,12 @@ public class Main {
                         }
 
                         else//error and loop the prior question
-                            System.out.println("Invalid vehicle!!");
+                            logger.error("Invalid vehicle!!");
 
                     }
                 }
                 else if(userConfirmInput.equalsIgnoreCase("no")) {
-                    category = Enums.VehicleCategories.getVehicleCategoriesByCode(existingVehicle.getCategory()).getDescription();
+                    category = Enums.VehicleCategories.getByCode(existingVehicle.getCategory()).getDescription();
                     break;
                 }
                 else
@@ -158,7 +164,10 @@ public class Main {
             else if(category.equals(Enums.VehicleCategories.TRUCK.getDescription()))
                 vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Truck(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
             else //error and loop the prior question
-                System.out.println("Invalid vehicle is being updated!!");
+                logger.error("Invalid vehicle is being updated!!");
+
+            if(isUpdateValid)
+                logger.info("Vehicle updated successfully!");
 
             System.out.println("Updated vehicles list: ");
             vehicleManipulationByMapService.ShowAllVehicles();
@@ -181,6 +190,7 @@ public class Main {
             }
 
             vehicleManipulationByMapService.DeleteVehicleByPlate(plateNumber);
+            logger.info("Vehicle removed successfully!");
 
             System.out.println("Updated vehicles list: ");
             vehicleManipulationByMapService.ShowAllVehicles();
@@ -205,7 +215,7 @@ public class Main {
             }
 
             catch(DateTimeParseException e) {
-                System.out.println("Please enter a valid date");
+                logger.error("Please enter a valid date");
             }
         }
 
