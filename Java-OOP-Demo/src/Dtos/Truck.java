@@ -1,11 +1,10 @@
 package Dtos;
 
 import Common.Enums;
-import Interfaces.IRental;
 
 import java.time.LocalDate;
 
-public class Truck extends Vehicles implements IRental {
+public class Truck extends Vehicles {
 
     public Truck(String plateNumber, String make, String model, LocalDate registeredDate){
         super (plateNumber, make, model, registeredDate, Enums.VehicleCategories.TRUCK.getCode());
@@ -16,20 +15,23 @@ public class Truck extends Vehicles implements IRental {
 
         double DailyPrice = 550;//Basic price
         Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
-                .getVehicleCategoriesByDescription(getMake().toLowerCase());
+                .getByDescription(getMake().toLowerCase());
         vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
 
         switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
-            case Enums.VehicleBrands.TOYOTA:
+            case TOYOTA:
                 DailyPrice = 300;
-            case Enums.VehicleBrands.FORD:
+                break;
+            case FORD:
                 DailyPrice = 400;
-            case Enums.VehicleBrands.NISSAN:
+                break;
+            case NISSAN:
                 DailyPrice = 225;
+                break;
         }
 
         //decrease based of the machine year (older => less expensive)
-        int carYear = LocalDate.now().getYear() - getRegisteredDate().getYear();
+        int carYear = Math.max(1,(LocalDate.now().getYear() - getRegisteredDate().getYear()));
         DailyPrice -= DailyPrice / carYear; // -= decrease the by year value into daily rate.
 
         return DailyPrice;
@@ -40,17 +42,17 @@ public class Truck extends Vehicles implements IRental {
     public double getPromoPrice() {
         double promoPrice = getDailyRate();
         Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
-                .getVehicleCategoriesByDescription(getMake().toLowerCase());
+                .getByDescription(getMake().toLowerCase());
         vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
 
         switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
-            case Enums.VehicleBrands.TOYOTA:
+            case TOYOTA:
                 promoPrice -= (promoPrice * .5); //cheapest
                 break;
-            case Enums.VehicleBrands.FORD:
+            case FORD:
                 promoPrice -= (promoPrice * .3); // cheaper
                 break;
-            case Enums.VehicleBrands.NISSAN:
+            case NISSAN:
                 promoPrice -= (promoPrice * .2); // cheap
                 break;
 

@@ -29,12 +29,14 @@ public abstract class Vehicles implements IRental {
 
     public int getCategory(){
         return category;
-    }
+    } //Should set to enum type instead?
 
     public Vehicles(String plateNumber, String make, String model, LocalDate registeredDate, int category) {
 
         //Validation check
-        if(make.isBlank()) //isBlank() => .IsNullOrWhiteSpace in c#
+        if(plateNumber.isBlank()) //isBlank() => .IsNullOrWhiteSpace in c#
+            throw new IllegalArgumentException("Make cannot be null");
+        if(make.isBlank())
             throw new IllegalArgumentException("Make cannot be null");
         if(model.isBlank())
             throw new IllegalArgumentException("Model cannot be null");
@@ -80,6 +82,6 @@ public abstract class Vehicles implements IRental {
 
     //Return the total cost for rental.
     public double getTotalRate(Integer days) {
-        return getPromoPrice() * days;
+        return days <= 0 ? 0 : getPromoPrice() * days;
     }
 }

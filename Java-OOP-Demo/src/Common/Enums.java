@@ -35,7 +35,7 @@ public class Enums {
             return description;
         }
 
-        public static VehicleCategories getVehicleCategoriesByCode(Integer code) {
+        public static VehicleCategories getByCode(Integer code) {
             return vehicleCategoriesByCode.get(code);
         }
     }
@@ -63,7 +63,7 @@ public class Enums {
             return description;
         }
 
-        public static VehicleBrands getVehicleCategoriesByDescription(String description) {
+        public static VehicleBrands getByDescription(String description) {
             return VehicleBrandsByDescription.get(description);
         }
 
