@@ -4,10 +4,12 @@ The app that will be simulate a car rental company. It will be used internally a
 
 App key points:
 
-1. Can only rent Cars, Vans and SUVs, with different rates.
-2. Contain a rate by day cost and promotional value applied to certain items.
-3. Will have a status of availability for vehicles currently available.
-4. The user must be able to add/remove/update vehicles.
-5. Each vehicles will consist of plate number, make, model, registeredDate, available and type.
-6. Each plate number must be unique.
-7. Validation must be added to avoid duplicated plate number.
+1. Can only rent Cars, Vans and SUVs, with different rates. (❌Missing SUV)
+2. Contain a rate by day cost and promotional value applied to certain items. (✅)
+3. Will have a status of availability for vehicles currently available.(❌)
+4. The user must be able to add/remove/update vehicles.(✅)
+5. Each vehicles will consist of plate number, make, model, registeredDate, available and type.(❌Missing availability)
+6. Each plate number must be unique.(✅)
+7. Validation must be added to avoid duplicated plate number(✅)
+8. The app will make use of a text file for storing and reading vehicles for the time being.(✅)
+9. Have a look up system to search by plate.(✅)
