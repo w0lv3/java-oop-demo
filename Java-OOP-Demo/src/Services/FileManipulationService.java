@@ -3,9 +3,7 @@ package Services;
 import Adapter.LocalDateAdapter;
 import Common.Commons;
 import Common.Enums;
-import Dtos.Car;
-import Dtos.Truck;
-import Dtos.Vehicles;
+import Dtos.*;
 import Interfaces.IFileManipulationService;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -99,9 +97,19 @@ public class FileManipulationService implements IFileManipulationService {
                                 filledMap.putIfAbsent(carInFile.getPlateNumber(), carInFile);
                             }
 
-                            if (Objects.equals(Integer.parseInt(category), Enums.VehicleCategories.TRUCK.getCode())){
-                                Truck truckInFile = gson.fromJson(fileLine, Truck.class);
-                                filledMap.putIfAbsent(truckInFile.getPlateNumber(), truckInFile);
+                            if (Objects.equals(Integer.parseInt(category), Enums.VehicleCategories.VAN.getCode())){
+                                Van VanInFile = gson.fromJson(fileLine, Van.class);
+                                filledMap.putIfAbsent(VanInFile.getPlateNumber(), VanInFile);
+                            }
+
+                            if (Objects.equals(Integer.parseInt(category), Enums.VehicleCategories.PICKUP.getCode())){
+                                Pickup pickupInFile = gson.fromJson(fileLine, Pickup.class);
+                                filledMap.putIfAbsent(pickupInFile.getPlateNumber(), pickupInFile);
+                            }
+
+                            if (Objects.equals(Integer.parseInt(category), Enums.VehicleCategories.SUV.getCode())){
+                                SUV SUVInFile = gson.fromJson(fileLine, SUV.class);
+                                filledMap.putIfAbsent(SUVInFile.getPlateNumber(), SUVInFile);
                             }
                         });
             } catch (IOException e) {
@@ -124,9 +132,13 @@ public class FileManipulationService implements IFileManipulationService {
         for(T vehicle:importedVehicles)
         {
             if(vehicleCLass == Car.class)
-                AddCar(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
-            else if(vehicleCLass == Truck.class)
-                AddVan(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate());
+                addCar(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate(), vehicle.getAvailability());
+            if(vehicleCLass == Van.class)
+                addVan(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate(), vehicle.getAvailability());
+            if(vehicleCLass == Pickup.class)
+                addPickup(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate(), vehicle.getAvailability());
+            else if(vehicleCLass == SUV.class)
+                addSUV(vehicle.getPlateNumber(), vehicle.getMake(), vehicle.getModel(), vehicle.getRegisteredDate(), vehicle.getAvailability());
         }
     }
 
@@ -134,16 +146,29 @@ public class FileManipulationService implements IFileManipulationService {
         return gson.fromJson(json, type);
     }
 
-    private Car AddCar(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Car newCar = new Car(plateNumber,make,model,registeredDate);
+    private Car addCar(String plateNumber, String make, String model, LocalDate registeredDate, boolean available) {
+        Car newCar = new Car(plateNumber,make,model,registeredDate, available);
         vehicleMapFromFile.putIfAbsent(newCar.getPlateNumber(), newCar);
         return newCar; //Return for adding into existingVehicles
     }
 
-    private Truck AddVan(String plateNumber, String make, String model, LocalDate registeredDate) {
-        Truck newVan = new Truck(plateNumber, make,model,registeredDate);
+    private Van addVan(String plateNumber, String make, String model, LocalDate registeredDate, boolean available) {
+        Van newVan = new Van(plateNumber, make,model,registeredDate, available);
         vehicleMapFromFile.putIfAbsent(newVan.getPlateNumber(), newVan);
         return newVan; //Return for adding into existingVehicles
     }
+
+    private Pickup addPickup(String plateNumber, String make, String model, LocalDate registeredDate, boolean available) {
+        Pickup newVan = new Pickup(plateNumber, make,model,registeredDate, available);
+        vehicleMapFromFile.putIfAbsent(newVan.getPlateNumber(), newVan);
+        return newVan; //Return for adding into existingVehicles
+    }
+
+    private SUV addSUV(String plateNumber, String make, String model, LocalDate registeredDate, boolean available) {
+        SUV newVan = new SUV(plateNumber, make,model,registeredDate, available);
+        vehicleMapFromFile.putIfAbsent(newVan.getPlateNumber(), newVan);
+        return newVan; //Return for adding into existingVehicles
+    }
+
     //endregion
 }

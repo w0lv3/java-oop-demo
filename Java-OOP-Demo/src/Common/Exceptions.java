@@ -8,4 +8,10 @@ public class Exceptions {
             super("Vehicle with plate number '" + plateNumber + "' not found.");
         }
     }
+
+    public static class InvalidDailyPriceException extends RuntimeException{
+        public InvalidDailyPriceException(){
+            super("Invalid daily price!");
+        }
+    }
 }

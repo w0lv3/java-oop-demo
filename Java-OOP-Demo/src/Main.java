@@ -1,9 +1,9 @@
 import Common.Commons;
 import Common.Enums;
-import Dtos.Car;
-import Dtos.Truck;
-import Dtos.Vehicles;
+import Dtos.*;
+import Interfaces.IRentalService;
 import Interfaces.IVehicleManipulationService;
+import Services.RentalService;
 import Services.VehicleManipulationService;
 
 import java.time.LocalDate;
@@ -15,49 +15,31 @@ import org.apache.logging.log4j.Logger;
 public class Main {
     //Global variable to store all vehicles
     private static final List<Vehicles> allVehicles = new ArrayList<>();
-    private static Logger logger = LogManager.getLogger(Main.class);
-    //After adding a uniqueIdentifier, have the Set for plate number.
-    private static Set<Vehicles> existingVehicles = new HashSet<>();
-
-    //Raw JSON Car items
-    private final static String jsonCarList =
-            """
-            [
-                {"plateNumber":"QB90JA20", "make":"Toyota", "model":"Camry", "registeredDate":"01-01-2020","category":1},
-                {"plateNumber":"VA32JA18","make":"Ford", "model":"F-150", "registeredDate":"05-03-2018", "category":1}
-            ]
-            """;
-
-    //Raw JSON Trucks items
-    private final static String jsonTruckList =
-            """
-            [
-                {"plateNumber":"PL13MA98","make":"Toyota", "model":"Hilux", "registeredDate":"01-03-1998","category":2},
-                {"plateNumber":"RH32MY15","make":"Nissan", "model":"Triton", "registeredDate":"15-05-2015","category":2}
-            ]
-            """;
-
-
+    private static final Logger logger = LogManager.getLogger(Main.class);
     private static IVehicleManipulationService vehicleManipulationByMapService;
+    private static IRentalService rentalService;
 
     public static void main(String[] args){
         logger.info("Application Starting");
         //Make use of services to demonstrate manipulation by add/update/remove and lookup using map.
         //Load up service with vehicles
-        vehicleManipulationByMapService = new VehicleManipulationService(jsonCarList, jsonTruckList);
+        vehicleManipulationByMapService = new VehicleManipulationService();
 
         //Display all vehicles
         Scanner consoleReaderForService = new Scanner(System.in);
         System.out.println("\n\nUsing Map: \nAvailable vehicles: ");
         vehicleManipulationByMapService.ShowAllVehicles();
 
-        //Vehicle manipulation via vehicleManipulationByMapService
+        //CRUD operations
         //Add
         AddVehicle(consoleReaderForService);
         //Update
         UpdateVehicle(consoleReaderForService);
         //Remove
         RemoveVehicle(consoleReaderForService);
+
+        //Renting section
+        rentalOperations(consoleReaderForService);
 
         //Close scanner
         consoleReaderForService.close();
@@ -84,24 +66,41 @@ public class Main {
             }
 
             while (category == null) {
-                System.out.println("Do you wish to add a car or a truck: ");
+                System.out.println("Do you wish to add a car, a van, a pickup or an SUV: ");
                 String vehicleType = consoleReaderForService.nextLine();
                 if (vehicleType.toLowerCase().equals(Enums.VehicleCategories.CAR.getDescription()))
                 {
                     VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
-                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Car(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
+                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Car(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, true));
                     category = vehicleType;
                     logger.info("Car added successfully!");
                 }
-                else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.TRUCK.getDescription()))
+                else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.VAN.getDescription()))
                 {
                     VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
-                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Truck(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
+                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Van(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, true));
                     category = vehicleType;
-                    logger.info("Truck added successfully!");
+                    logger.info("Van added successfully!");
+                }
+                else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.PICKUP.getDescription()))
+                {
+                    VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
+                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new Pickup(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, true));
+                    category = vehicleType;
+                    logger.info("Pickup added successfully!");
+                }
+                else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.SUV.getDescription()))
+                {
+                    VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
+                    vehicleManipulationByMapService.AddVehicleByPlate(plateNumber, new SUV(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, true));
+                    category = vehicleType;
+                    logger.info("SUV added successfully!");
                 }
                 else //error and loop the prior question
-                    logger.error("Invalid vehicle is being added!!");
+                {
+                    System.out.println("Please enter a valid type of transport.");
+                    logger.warn("Invalid vehicle is being added!!");
+                }
             }
 
             System.out.println("Updated vehicles list: ");
@@ -117,11 +116,14 @@ public class Main {
             Vehicles existingVehicle = null;
             String plateNumber = null;
             String category = null;
+            Enums.VehicleCategories vehicleType = null;
 
             while(existingVehicle == null){
                 System.out.println("Enter plate number: ");
                 plateNumber = consoleReaderForService.nextLine();
                 existingVehicle = vehicleManipulationByMapService.GetVehicleByPlate(plateNumber);
+                category = Enums.VehicleCategories.getByCode(existingVehicle.getCategory()).getDescription();
+                vehicleType = Enums.VehicleCategories.getByDescription(category);
             }
 
             boolean isUpdateValid = false;
@@ -130,27 +132,23 @@ public class Main {
                 System.out.println("Do you change the type of the vehicle also?(yes/no) ");
                 String userConfirmInput = consoleReaderForService.nextLine();
                 if(userConfirmInput.equalsIgnoreCase("yes")){
-                    while (category == null) {
-                        System.out.println("Do you wish to change the vehicle to a car or a truck?");
-                        String vehicleType = consoleReaderForService.nextLine();
+                    vehicleType = null;
+                    while (vehicleType == null) {
+                        System.out.println("Do you wish to change the vehicle to a car, a van, a pickup or an SUV?");
+                        String userVehicleType = consoleReaderForService.nextLine();
+                        vehicleType = Enums.VehicleCategories.getByDescription(userVehicleType.toLowerCase());
 
-                        if (vehicleType.toLowerCase().equals(Enums.VehicleCategories.CAR.getDescription())){
-                            category = vehicleType;
+                        if(vehicleType != null) {
                             isUpdateValid = true;
                         }
-
-                        else if(vehicleType.toLowerCase().equals(Enums.VehicleCategories.TRUCK.getDescription())){
-                            category = vehicleType;
-                            isUpdateValid = true;
-                        }
-
                         else//error and loop the prior question
-                            logger.error("Invalid vehicle!!");
-
+                        {
+                            System.out.println("Please enter a valid transport type.");
+                            logger.warn("Invalid vehicle!!");
+                        }
                     }
                 }
                 else if(userConfirmInput.equalsIgnoreCase("no")) {
-                    category = Enums.VehicleCategories.getByCode(existingVehicle.getCategory()).getDescription();
                     break;
                 }
                 else
@@ -159,12 +157,20 @@ public class Main {
             }
 
             VehicleInput vehicleInput = getVehicleInput(consoleReaderForService);
-            if (category.equals(Enums.VehicleCategories.CAR.getDescription()))
-                vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Car(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
-            else if(category.equals(Enums.VehicleCategories.TRUCK.getDescription()))
-                vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Truck(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate));
-            else //error and loop the prior question
-                logger.error("Invalid vehicle is being updated!!");
+            switch (vehicleType){
+                case CAR:
+                    vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Car(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, existingVehicle.getAvailability()));
+                    break;
+                case VAN:
+                    vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Van(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, existingVehicle.getAvailability()));
+                    break;
+                case PICKUP:
+                    vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new Pickup(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, existingVehicle.getAvailability()));
+                    break;
+                case SUV:
+                    vehicleManipulationByMapService.UpdateVehicleByPlate(plateNumber, new SUV(plateNumber, vehicleInput.make, vehicleInput.model, vehicleInput.registeredDate, existingVehicle.getAvailability()));
+                    break;
+            }
 
             if(isUpdateValid)
                 logger.info("Vehicle updated successfully!");
@@ -197,6 +203,42 @@ public class Main {
         }
     }
     //endregion
+
+    private static void rentalOperations(Scanner consoleReaderForService) {
+        rentalService = new RentalService();// init
+        Vehicles existingVehicle = null;
+        String plateNumber = null;
+
+        while(existingVehicle == null){
+            System.out.println("Enter plate number: ");
+            plateNumber = consoleReaderForService.nextLine();
+            existingVehicle = vehicleManipulationByMapService.GetVehicleByPlate(plateNumber);
+        }
+        double totalCost = -1;
+        while(totalCost < 0){
+            System.out.println("Enter the number of rental days: ");
+            int days = consoleReaderForService.nextInt();
+            if(days >= 0){
+                totalCost = rentalService.GetSelectedTotalCost(existingVehicle, days);
+                System.out.println("Your total cost will be $"+ totalCost);
+            }
+            else
+                System.out.println("Please enter a valid set of days");
+        }
+
+        System.out.println("Do you wish to continue with renting the selected vehicle? Enter yes or press any key to continue!");
+        boolean toRent = consoleReaderForService.nextLine().equalsIgnoreCase("yes");
+
+        if(toRent){
+            //TODO to update the selected vehicle status
+            ;
+        }else {
+            //TODO to rerun the rental func
+            ;
+        }
+
+
+    }
 
     //Get user input
     private static VehicleInput getVehicleInput(Scanner consoleReader) {

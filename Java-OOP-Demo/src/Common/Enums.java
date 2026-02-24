@@ -9,7 +9,10 @@ public class Enums {
     public enum VehicleCategories{
 
         CAR(1,"car"),
-        TRUCK(2,"truck");
+        VAN(2,"van"),
+        PICKUP(3,"pickup"),
+        SUV(4,"suv");
+
 
         private final String description;
         private final int code;
@@ -19,6 +22,15 @@ public class Enums {
         static {
             for (VehicleCategories categories : values()){
                 vehicleCategoriesByCode.put(categories.code, categories);
+            }
+        }
+
+        private static final LinkedHashMap <String, VehicleCategories> vehicleCategoriesByDescription = new LinkedHashMap<>();
+
+        //Initialize the Enum mapper.
+        static {
+            for (VehicleCategories categories : values()){
+                vehicleCategoriesByDescription.put(categories.description, categories);
             }
         }
 
@@ -38,13 +50,18 @@ public class Enums {
         public static VehicleCategories getByCode(Integer code) {
             return vehicleCategoriesByCode.get(code);
         }
+
+        public static VehicleCategories getByDescription(String description) {
+            return vehicleCategoriesByDescription.get(description);
+        }
     }
 
     public enum VehicleBrands{
         NONE(""),
         FORD("Ford"),
         TOYOTA("Toyota"),
-        NISSAN("Nissan");
+        NISSAN("Nissan"),
+        RENAULT("Renault");
 
         private final String description;
         private static final HashMap <String, VehicleBrands> VehicleBrandsByDescription = new HashMap<>();

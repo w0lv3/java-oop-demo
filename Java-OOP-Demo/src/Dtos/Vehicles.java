@@ -1,16 +1,19 @@
 package Dtos;
 
-import Interfaces.IRental;
+import Common.Enums;
+import Interfaces.IRentalService;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
-public abstract class Vehicles implements IRental {
+public abstract class Vehicles {
     private final String plateNumber;
     private final String make;
     private final String model;
     private final LocalDate registeredDate;
     private final int category;
+    private final boolean available;
+    private transient boolean noPromo;
 
     //Getters
     public String getPlateNumber(){return plateNumber;}
@@ -31,7 +34,10 @@ public abstract class Vehicles implements IRental {
         return category;
     } //Should set to enum type instead?
 
-    public Vehicles(String plateNumber, String make, String model, LocalDate registeredDate, int category) {
+    public boolean getAvailability(){return available;}
+    public boolean getNoPromo(){return noPromo;}
+
+    public Vehicles(String plateNumber, String make, String model, LocalDate registeredDate, boolean available, int category) {
 
         //Validation check
         if(plateNumber.isBlank()) //isBlank() => .IsNullOrWhiteSpace in c#
@@ -50,12 +56,27 @@ public abstract class Vehicles implements IRental {
         this.model = model;
         this.registeredDate = registeredDate;
         this.category = category;
+        this.available = available;
+    }
+
+    //Setter
+    public void setNoPromo(boolean noPromo){
+        this.noPromo = noPromo;
     }
 
     //String.format("%.2f", getPromoPrice()) for 2 decimal points
     @Override
     public String toString() {
-        return getMake() + " | " + getModel() + " | " + getRegisteredDate() + " | Daily rental price: $" + String.format("%.2f", getPromoPrice()) + (getNoPromo() ? " Promotional price not applied!" : "") ;
+        return getMake() + " | " + getModel() + " | " + getRegisteredDate();
+    }
+
+    //Print for rentals
+    public String rentalDisplay(){
+        return getPlateNumber() + " | "
+                + Enums.VehicleCategories.getByCode(getCategory()).getDescription() + " | "
+                + getMake() + " | "
+                + getModel() + " | "
+                + getRegisteredDate();
     }
 
     //Purpose is to have the equals of vehicle to focus on the
@@ -78,10 +99,5 @@ public abstract class Vehicles implements IRental {
     public int hashCode()
     {
         return Objects.hash(this.plateNumber);
-    }
-
-    //Return the total cost for rental.
-    public double getTotalRate(Integer days) {
-        return days <= 0 ? 0 : getPromoPrice() * days;
     }
 }

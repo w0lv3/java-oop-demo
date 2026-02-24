@@ -1,10 +1,9 @@
 package Services;
 
+import Common.Commons;
 import Common.Enums;
 import Common.Exceptions;
-import Dtos.Car;
-import Dtos.Truck;
-import Dtos.Vehicles;
+import Dtos.*;
 
 import Interfaces.IFileManipulationService;
 import Interfaces.IVehicleManipulationService;
@@ -20,16 +19,19 @@ public class VehicleManipulationService implements IVehicleManipulationService {
     //Load up FileService
     IFileManipulationService FileManipulationService = new FileManipulationService();
 
-    public VehicleManipulationService(String jsonCarList, String jsonVanList){
+    public VehicleManipulationService(){
         //Stack vs heap
         String stackVariable = "vehicle";
-        Car heapVariable = new Car("1010JA90","Toyota", "Rav4", LocalDate.of(1990,1,31));
+        Car heapVariable = new Car("1010JA90","Toyota", "Rav4", LocalDate.of(1990,1,31), true);
         System.out.printf("\nThis a stack : %s",stackVariable );
         System.out.printf("\nThis a heap : %s\n",heapVariable);
 
         //Populate File with hardcoded JSON
-        FileManipulationService.ImportJSONToFile(jsonCarList, Car.class);
-        FileManipulationService.ImportJSONToFile(jsonVanList, Truck.class);
+        FileManipulationService.ImportJSONToFile(Commons.jsonCarList, Car.class);
+        FileManipulationService.ImportJSONToFile(Commons.jsonVanList, Van.class);
+        FileManipulationService.ImportJSONToFile(Commons.jsonPickupList, Pickup.class);
+        FileManipulationService.ImportJSONToFile(Commons.jsonSUVList, SUV.class);
+
         //Load up MapWith text file needs to add validity for null ref
         FileManipulationService.LoadMapByFile().forEach(this::AddVehicleByPlate);
 
@@ -47,17 +49,29 @@ public class VehicleManipulationService implements IVehicleManipulationService {
                 .filter(v-> v.getCategory() == 1)
                 .forEach(v-> System.out.println(v));
 
-        System.out.println("\nand these trucks: ");
-        //Display all Trucks only
+        System.out.println("\nand these vans: ");
+        //Display all Vans only
         allVehicles.stream()
                 .filter(v-> v.getCategory() == 2)
+                .forEach(v-> System.out.println(v));
+
+        //Display all Pickups only
+        System.out.println("\nand these pickups: ");
+        allVehicles.stream()
+                .filter(v-> v.getCategory() == 3)
+                .forEach(v-> System.out.println(v));
+
+        //Display all SUV only
+        System.out.println("\nand these SUVs: ");
+        allVehicles.stream()
+                .filter(v-> v.getCategory() == 4)
                 .forEach(v-> System.out.println(v));
 
         //Display promo vehicles
         System.out.println("\nWe recommend the Toyota vehicles as there is a current promotion. The Toyota vehicles are: ");
         allVehicles.stream()
                 .filter(v-> v.getMake().equals("Toyota"))
-                .peek(v-> System.out.println(v.getCategory() + " " + v));
+                .forEach(v-> System.out.println(Enums.VehicleCategories.getByCode(v.getCategory()).getDescription()  + " " + v));
 
         // create a Map collection of vehicles grouped by the make
         System.out.println("Available vehicles by brand:");
@@ -82,9 +96,21 @@ public class VehicleManipulationService implements IVehicleManipulationService {
                 vehicles.forEach(v-> System.out.println(v));
         });
 
-        System.out.println("\nTrucks: ");
+        System.out.println("\nVans: ");
         vehiclesByCategory.forEach((k,vehicles) -> {
-            if(k == Enums.VehicleCategories.TRUCK.getCode())
+            if(k == Enums.VehicleCategories.VAN.getCode())
+                vehicles.forEach(v-> System.out.println(v));
+        });
+
+        System.out.println("\nPickpus: ");
+        vehiclesByCategory.forEach((k,vehicles) -> {
+            if(k == Enums.VehicleCategories.PICKUP.getCode())
+                vehicles.forEach(v-> System.out.println(v));
+        });
+
+        System.out.println("\nSUVs: ");
+        vehiclesByCategory.forEach((k,vehicles) -> {
+            if(k == Enums.VehicleCategories.SUV.getCode())
                 vehicles.forEach(v-> System.out.println(v));
         });
     }
@@ -103,7 +129,7 @@ public class VehicleManipulationService implements IVehicleManipulationService {
         if(lookupVehicle == null)
             throw new Exceptions.VehicleNotFoundException(lookupPlate);//Custom exception
 
-        System.out.println("Vehicle Found: +" + lookupVehicle);
+        System.out.println("Vehicle Found: " + lookupVehicle);
         return lookupVehicle;
     }
 
