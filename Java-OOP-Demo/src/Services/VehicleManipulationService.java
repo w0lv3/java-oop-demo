@@ -126,10 +126,18 @@ public class VehicleManipulationService implements IVehicleManipulationService {
 
     public Vehicles GetVehicleByPlate(String lookupPlate){
         Vehicles lookupVehicle = vehicleMap.get(lookupPlate); //Returns the found vehicle
-        if(lookupVehicle == null)
-            throw new Exceptions.VehicleNotFoundException(lookupPlate);//Custom exception
+        try {
+            if(lookupVehicle == null)
+                throw new Exceptions.VehicleNotFoundException(lookupPlate);//Custom exception
 
-        System.out.println("Vehicle Found: " + lookupVehicle);
+            System.out.println("Vehicle Found: " + lookupVehicle);
+
+        }
+        catch (RuntimeException e)
+        {
+            System.out.println("Vehicle not Found!");
+        }
+
         return lookupVehicle;
     }
 

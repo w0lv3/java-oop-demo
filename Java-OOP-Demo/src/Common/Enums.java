@@ -8,10 +8,10 @@ public class Enums {
 
     public enum VehicleCategories{
 
-        CAR(1,"car"),
-        VAN(2,"van"),
-        PICKUP(3,"pickup"),
-        SUV(4,"suv");
+        CAR(1,"Car"),
+        VAN(2,"Van"),
+        PICKUP(3,"Pickup"),
+        SUV(4,"SUV");
 
 
         private final String description;
@@ -30,7 +30,7 @@ public class Enums {
         //Initialize the Enum mapper.
         static {
             for (VehicleCategories categories : values()){
-                vehicleCategoriesByDescription.put(categories.description, categories);
+                vehicleCategoriesByDescription.put(categories.description.toLowerCase(), categories);
             }
         }
 

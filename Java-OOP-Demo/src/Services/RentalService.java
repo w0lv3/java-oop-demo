@@ -13,23 +13,51 @@ public class RentalService implements IRentalService {
 
     IFileManipulationService fileManipulationService = new FileManipulationService();
 
-    private Stream<Vehicles> availableVehiclesMap;
-    private boolean noPromo = false;
-
     public RentalService(){
         //InIt with only available for rental vehicles
-        availableVehiclesMap = fileManipulationService.LoadMapByFile().values().stream().filter(Vehicles::getAvailability);
         DisplayAvailableVehicles();
     }
 
     public void DisplayAvailableVehicles(){
+        System.out.println("\nAvailable vehicles for rent: ");
+        Stream<Vehicles> availableVehiclesMap = fileManipulationService.GetAvailableVehiclesFromFile();
         availableVehiclesMap.forEach(v-> System.out.println(v.rentalDisplay()
+                + " | " + "Daily rental price: $" + String.format("%.2f", getPromoPrice(v))
+                + (v.getNoPromo() ? " Promotional price not applied!" : "") ));
+
+        System.out.println("\nRented out vehicles: ");
+        Stream<Vehicles> rentedVehiclesMap = fileManipulationService.GetRentedVehiclesFromFile();
+        rentedVehiclesMap.forEach(v-> System.out.println(v.rentalDisplay()
                 + " | " + "Daily rental price: $" + String.format("%.2f", getPromoPrice(v))
                 + (v.getNoPromo() ? " Promotional price not applied!" : "") ));
     }
 
     public double GetSelectedTotalCost(Vehicles selectedVehicle, int days){
         return getPromoPrice(selectedVehicle) * days;
+    }
+
+    public double getPromoPrice(Vehicles selectedVehicle) {
+        double promoPrice = getDailyRate(selectedVehicle);
+        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
+                .getByDescription(selectedVehicle.getMake().toLowerCase());
+
+        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
+        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
+            case TOYOTA:
+                promoPrice -= (promoPrice * .15); //cheaper
+                break;
+            case FORD:
+                promoPrice -= (promoPrice * .10); //cheap
+                break;
+            case NISSAN:
+                promoPrice -= (promoPrice * .20); //cheapest
+                break;
+            default:
+                selectedVehicle.setNoPromo(true);
+                break;
+        }
+
+        return promoPrice;
     }
 
     private double getDailyRate(Vehicles selectedVehicle) {
@@ -68,32 +96,6 @@ public class RentalService implements IRentalService {
 
         return dailyPrice;
     }
-
-    public double getPromoPrice(Vehicles selectedVehicle) {
-        double promoPrice = getDailyRate(selectedVehicle);
-        Enums.VehicleBrands vehicleBrand = Enums.VehicleBrands
-                .getByDescription(selectedVehicle.getMake().toLowerCase());
-
-        vehicleBrand = vehicleBrand != null ? vehicleBrand : Enums.VehicleBrands.NONE;
-        switch (vehicleBrand) { //set to lowercase to avoid Case typo issues
-            case TOYOTA:
-                promoPrice -= (promoPrice * .15); //cheaper
-                break;
-            case FORD:
-                promoPrice -= (promoPrice * .10); //cheap
-                break;
-            case NISSAN:
-                promoPrice -= (promoPrice * .20); //cheapest
-                break;
-            default:
-                selectedVehicle.setNoPromo(true);
-                break;
-        }
-
-        return promoPrice;
-    }
-
-
 
     private static double GetCarDailyPrice(Enums.VehicleBrands vehicleBrand) {
         double dailyPrice = 450;//Basic price

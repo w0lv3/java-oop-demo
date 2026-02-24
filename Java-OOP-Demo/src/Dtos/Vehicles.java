@@ -12,7 +12,7 @@ public abstract class Vehicles {
     private final String model;
     private final LocalDate registeredDate;
     private final int category;
-    private final boolean available;
+    private boolean available;
     private transient boolean noPromo;
 
     //Getters
@@ -63,11 +63,17 @@ public abstract class Vehicles {
     public void setNoPromo(boolean noPromo){
         this.noPromo = noPromo;
     }
+    public void SetAvailability(boolean isAvailable){
+        this.available = isAvailable;
+    }
 
     //String.format("%.2f", getPromoPrice()) for 2 decimal points
     @Override
     public String toString() {
-        return getMake() + " | " + getModel() + " | " + getRegisteredDate();
+        return getPlateNumber() + " | "
+                + getMake() + " | "
+                + getModel() + " | "
+                + getRegisteredDate();
     }
 
     //Print for rentals

@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class FileManipulationService implements IFileManipulationService {
 
@@ -30,11 +31,13 @@ public class FileManipulationService implements IFileManipulationService {
                 .create();
 
     public FileManipulationService(){
-        if(filePath.getParent() != null){
+        if(filePath.getParent() != null) {
             if (Files.exists(filePath)) {
                 FileExists = true;
-                LoadMapByFile();
+                vehicleMapFromFile = LoadMapByFile();
             }
+        }
+        else{
             try {
                 //Create directory
                 Files.createDirectories(Paths.get(Commons.LibraryDirectoryPath));
@@ -56,9 +59,10 @@ public class FileManipulationService implements IFileManipulationService {
     public void UpdateFileWithMap(Map<String, Vehicles> updatedVehicleMap){
 
         //Add and replace existing lines, in case of an update.
-        if(updatedVehicleMap != null)
-            vehicleMapFromFile = updatedVehicleMap;
-
+        if(updatedVehicleMap != null){
+            this.vehicleMapFromFile.clear(); //Clear the Map before putAll to handle deleted rows
+            this.vehicleMapFromFile.putAll(updatedVehicleMap);
+        }
         UpdateJsonFile();
     }
 
@@ -122,6 +126,14 @@ public class FileManipulationService implements IFileManipulationService {
         return filledMap;//returns empty if fill is empty.
     }
 
+    public Stream<Vehicles> GetAvailableVehiclesFromFile(){
+        return this.vehicleMapFromFile.values().stream().filter(Vehicles::getAvailability);
+    }
+
+    public Stream<Vehicles> GetRentedVehiclesFromFile(){
+        return this.vehicleMapFromFile.values().stream().filter(vehicle-> !vehicle.getAvailability());
+    }
+
     //region add Vehicle private Methods.
     private <T extends Vehicles> void AddVehiclesList(String jsonVehiclesList, Class<T> vehicleCLass)
     {
@@ -169,6 +181,5 @@ public class FileManipulationService implements IFileManipulationService {
         vehicleMapFromFile.putIfAbsent(newVan.getPlateNumber(), newVan);
         return newVan; //Return for adding into existingVehicles
     }
-
     //endregion
 }
