@@ -78,6 +78,12 @@ public class VehicleManipulationService implements IVehicleManipulationService {
         System.out.printf("\nWe have a total of %d vehicles.", allVehicles.size()); //.size() is like .Count() in C#
         Map<String, List<Vehicles>> vehiclesByMake = allVehicles.stream().collect(Collectors.groupingBy(v -> v.getMake()));
         vehiclesByMake.forEach((make, vehicles)-> System.out.printf("\n%d from the %s brand.", vehicles.size(), make));
+
+        // Use Set to display every Make existing in the library
+        Set<String> vehicleBrands = new HashSet<>();
+        allVehicles.forEach(v -> vehicleBrands.add(v.getMake()));
+        System.out.println("\n\nUnique vehicle brands in the company:");
+        vehicleBrands.forEach(brand -> System.out.println("- " + brand));
         //endregion
     }
 
